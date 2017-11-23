@@ -16,9 +16,9 @@ oc adm policy add-scc-to-user anyuid system:serviceaccount:opsmgr:default
     
 Now instantiate the template within the project
 
-    ```
+```
 oc process -f opsmgr.yaml | oc create -f -
-    ```
+```
 
-
+A build will automatically start taking some minutes, finally the Ops Manager will be up and running, using a second pod for its own Mongod database (single instance).
 
