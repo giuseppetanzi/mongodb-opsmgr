@@ -1,0 +1,282 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: opsmgr
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      build: opsmgr
+    name: opsmgr
+  spec:
+    lookupPolicy:
+      local: false
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      build: opsmgr
+    name: opsmgr
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: opsmgr:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        uri: ${GIT_URL}
+        contextDir: ${GIT_CONTEXT}
+      type: Git
+    strategy:
+      type: Docker
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: opsmgr
+    name: mongod
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - from:
+        kind: DockerImage
+        name: docker.io/mongo:latest
+      importPolicy: {}
+      name: latest
+      referencePolicy:
+        type: Source
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      name: mongo
+    name: mongod
+  spec:
+    clusterIP: None
+    ports:
+    - port: 27017
+      protocol: TCP
+      targetPort: 27017
+    selector:
+      role: mongo
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: opsmgr
+    name: opsmgr
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentconfig: opsmgr
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: opsmgr
+  spec:
+    port:
+      targetPort: 8080-tcp
+    to:
+      kind: Service
+      name: opsmgr
+      weight: 100
+    wildcardPolicy: None
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      environment: test
+      role: mongo
+    name: mongod
+  spec:
+    replicas: 1
+    selector:
+      role: mongo
+      environment: test
+    strategy:
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          environment: test
+          role: mongo
+      spec:
+        containers:
+        - image: '' 
+          command:
+          - mongod
+          - --wiredTigerCacheSizeGB
+          - "0.1"
+          imagePullPolicy: Always
+          name: mongod-container
+          ports:
+          - containerPort: 27017
+            protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /data/db
+            name: mongodb-persistent-volume
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: mongodb-persistent-volume
+          persistentVolumeClaim:
+            claimName: mongodb-claim
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - mongod-container
+        from:
+          kind: ImageStreamTag
+          name: 'mongod:latest'
+      type: ImageChange
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: mongodb-claim
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 1Gi
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: mongodb-mms-claim
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 1Gi
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: opsmgr
+    name: opsmgr
+  spec:
+    replicas: 1
+    selector:
+      app: opsmgr
+      deploymentconfig: opsmgr
+    strategy:
+      activeDeadlineSeconds: 21600
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: opsmgr
+          deploymentconfig: opsmgr
+      spec:
+        containers:
+        - image: 
+          imagePullPolicy: Always
+          name: opsmgr
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /opt/mongodb/mms/conf/conf-mms.properties
+            name: volume-sll1a
+            subPath: conf-mms.properties
+          - mountPath: /etc/mongodb-mms
+            name: volume-7bl30
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: mms-map
+          name: volume-sll1a
+        - name: volume-7bl30
+          persistentVolumeClaim:
+            claimName: mongodb-mms-claim
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - opsmgr
+        from:
+          kind: ImageStreamTag
+          name: opsmgr:latest
+      type: ImageChange
+- apiVersion: v1
+  data:
+    conf-mms.properties: |+
+      mongo.mongoUri=mongodb://mongod:27017/?maxPoolSize=150
+      mongo.ssl=false
+      mongodb.ssl.CAFile=
+      mongodb.ssl.PEMKeyFile=
+      mongodb.ssl.PEMKeyFilePassword=
+      jvm.java.security.krb5.conf=
+      jvm.java.security.krb5.kdc=
+      jvm.java.security.krb5.realm=
+      mms.kerberos.principal=
+      mms.kerberos.keyTab=
+      mms.kerberos.debug=
+  kind: ConfigMap
+  metadata:
+    name: mms-map
+parameters:
+  - description: Git server URL for Ops Manager Dockerfile definition
+    displayName: Git URL
+    name: GIT_URL
+    required: true
+    value: https://github.com/giuseppetanzi/mongodb-opsmgr.git 
+  - description: Git server URL for Ops Manager Dockerfile definition
+    displayName: Git URL
+    name: GIT_CONTEXT
+    required: true
+    value: opsmgr
