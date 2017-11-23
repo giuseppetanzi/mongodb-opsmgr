@@ -27,9 +27,9 @@ objects:
     resources: {}
     runPolicy: Serial
     source:
+      contextDir: ${GIT_CONTEXT}
       git:
         uri: ${GIT_URL}
-        contextDir: ${GIT_CONTEXT}
       type: Git
     strategy:
       type: Docker
