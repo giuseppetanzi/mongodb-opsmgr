@@ -55,18 +55,19 @@ RUN wget -O mongodb-mms.deb https://downloads.mongodb.com/on-prem-mms/deb/mongod
 
 # RUN echo "deb http://$MONGO_REPO/apt/debian jessie/${MONGO_PACKAGE%-unstable}/$MONGO_MAJOR main" | tee "/etc/apt/sources.list.d/${MONGO_PACKAGE%-unstable}.list"
 
-# RUN set -x \
-#        && apt-get update \
- #       && apt-get install -y \
+RUN set -x \
+        && apt-get update \
+        && apt-get install -y \
   #              ${MONGO_PACKAGE}=$MONGO_VERSION \
    #             ${MONGO_PACKAGE}-server=$MONGO_VERSION \
     #            ${MONGO_PACKAGE}-shell=$MONGO_VERSION \
 #                ${MONGO_PACKAGE}-mongos=$MONGO_VERSION \
  #               ${MONGO_PACKAGE}-tools=$MONGO_VERSION \
-  #              net-tools \
    #     && rm -rf /var/lib/apt/lists/* \
     #    && rm -rf /var/lib/mongodb \
      #   && mv /etc/mongod.conf /etc/mongod.conf.orig
+
+       net-tools
 
 
 COPY init.sh /usr/local/bin/
