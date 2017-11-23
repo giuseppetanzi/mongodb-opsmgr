@@ -32,7 +32,7 @@ Finally, proceed with creation of Mongo nodes
 
 ```
 oc new-project servers
-oc adm policy add-scc-to-user anyuid system:serviceaccount:opsmgr:default
+oc adm policy add-scc-to-user anyuid system:serviceaccount:servers:default
 oc process -f mongo-nodes.yaml NAMESPACE=servers MMS_GROUPID=<MMS_GROUPID> MMS_APIKEY=<MMS_APIKEY> OPSMGR_URL=<OPSMGR_URL> | oc create -f -
 ```
 
