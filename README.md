@@ -12,7 +12,7 @@ Give the default service account for that project permission to start the pod wi
 
 ```
 oc adm policy add-scc-to-user anyuid system:serviceaccount:opsmgr:default
-    ```
+```
     
 Now instantiate the template within the project
 
