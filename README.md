@@ -35,3 +35,7 @@ oc new-project servers
 oc adm policy add-scc-to-user anyuid system:serviceaccount:opsmgr:default
 oc process -f mongo-nodes.yaml NAMESPACE=servers MMS_GROUPID=<MMS_GROUPID> MMS_APIKEY=<MMS_APIKEY> OPSMGR_URL=<OPSMGR_URL> | oc create -f -
 ```
+
+Again, the first build will take longer, afterwards the nodes will be deployed.
+
+The nodes will then be visible within the Ops Manager Web interface.
