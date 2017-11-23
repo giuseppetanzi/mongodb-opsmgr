@@ -46,27 +46,27 @@ RUN wget -O mongodb-mms.deb https://downloads.mongodb.com/on-prem-mms/deb/mongod
 # Options for MONGO_PACKAGE: mongodb-org OR mongodb-enterprise
 # Options for MONGO_REPO: repo.mongodb.org OR repo.mongodb.com
 # Example: docker build --build-arg MONGO_PACKAGE=mongodb-enterprise --build-arg MONGO_REPO=repo.mongodb.com .
-ARG MONGO_PACKAGE=mongodb-org
-ARG MONGO_REPO=repo.mongodb.org
-ENV MONGO_PACKAGE=${MONGO_PACKAGE} MONGO_REPO=${MONGO_REPO}
+# ARG MONGO_PACKAGE=mongodb-org
+# ARG MONGO_REPO=repo.mongodb.org
+# ENV MONGO_PACKAGE=${MONGO_PACKAGE} MONGO_REPO=${MONGO_REPO}
 
-ENV MONGO_MAJOR 3.4
-ENV MONGO_VERSION 3.4.10
+# ENV MONGO_MAJOR 3.4
+# ENV MONGO_VERSION 3.4.10
 
-RUN echo "deb http://$MONGO_REPO/apt/debian jessie/${MONGO_PACKAGE%-unstable}/$MONGO_MAJOR main" | tee "/etc/apt/sources.list.d/${MONGO_PACKAGE%-unstable}.list"
+# RUN echo "deb http://$MONGO_REPO/apt/debian jessie/${MONGO_PACKAGE%-unstable}/$MONGO_MAJOR main" | tee "/etc/apt/sources.list.d/${MONGO_PACKAGE%-unstable}.list"
 
-RUN set -x \
-        && apt-get update \
-        && apt-get install -y \
-                ${MONGO_PACKAGE}=$MONGO_VERSION \
-                ${MONGO_PACKAGE}-server=$MONGO_VERSION \
-                ${MONGO_PACKAGE}-shell=$MONGO_VERSION \
-                ${MONGO_PACKAGE}-mongos=$MONGO_VERSION \
-                ${MONGO_PACKAGE}-tools=$MONGO_VERSION \
-                net-tools \
-        && rm -rf /var/lib/apt/lists/* \
-        && rm -rf /var/lib/mongodb \
-        && mv /etc/mongod.conf /etc/mongod.conf.orig
+# RUN set -x \
+#        && apt-get update \
+ #       && apt-get install -y \
+  #              ${MONGO_PACKAGE}=$MONGO_VERSION \
+   #             ${MONGO_PACKAGE}-server=$MONGO_VERSION \
+    #            ${MONGO_PACKAGE}-shell=$MONGO_VERSION \
+#                ${MONGO_PACKAGE}-mongos=$MONGO_VERSION \
+ #               ${MONGO_PACKAGE}-tools=$MONGO_VERSION \
+  #              net-tools \
+   #     && rm -rf /var/lib/apt/lists/* \
+    #    && rm -rf /var/lib/mongodb \
+     #   && mv /etc/mongod.conf /etc/mongod.conf.orig
 
 
 COPY init.sh /usr/local/bin/
