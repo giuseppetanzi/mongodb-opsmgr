@@ -1,0 +1,183 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: mongo-agents
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${SERVICE_NAME}
+    labels:
+      name: mongo
+  spec:
+    ports:
+    - port: 27017
+      targetPort: 27017
+    clusterIP: None
+    selector:
+      role: mongo
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      build: automation-agent
+    name: automation-agent
+  spec:
+    lookupPolicy:
+      local: false
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      build: automation-agent
+    name: automation-agent
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: automation-agent:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      contextDir: ${GIT_CONTEXT} 
+      git:
+        uri: ${GIT_URL}
+      type: Git
+    strategy:
+      dockerStrategy:
+      type: Docker
+    triggers:
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+- apiVersion: apps/v1beta1
+  kind: StatefulSet
+  metadata:
+    labels:
+      appname: mytestapp
+      environment: test
+      role: mongo
+    name: ${MONGO_PREFIX}
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        appname: mytestapp
+        environment: test
+        role: mongo
+    serviceName: ${SERVICE_NAME} 
+    template:
+      metadata:
+        labels:
+          appname: mytestapp
+          environment: test
+          role: mongo
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: appname
+                    operator: In
+                    values:
+                    - mytestapp
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+        containers:
+        - args:
+          - /opt/mongodb-mms-automation/bin/mongodb-mms-automation-agent
+          - --mmsGroupId=${MMS_GROUPID}
+          - --mmsApiKey=${MMS_APIKEY}
+          - --mmsBaseUrl=${OPSMGR_URL}
+          - --mmsConfigBackup=/var/lib/mongodb-mms-automation/mongodb-mms-automation-cluster-backup.json
+          - --logLevel=INFO
+          image: ${REGISTRY_IP}:5000/${NAMESPACE}/automation-agent
+          imagePullPolicy: Always
+          name: mytestapp-mongodb-agent-container
+          ports:
+          - containerPort: 27017
+            protocol: TCP
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /data
+            name: mytestapp-data-storage-claim
+          - mountPath: /var/lib/mongodb-mms-automation
+            name: mytestapp-downloads-storage-claim
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 10
+    volumeClaimTemplates:
+    - metadata:
+        creationTimestamp: null
+        name: mytestapp-data-storage-claim
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    - metadata:
+        creationTimestamp: null
+        name: mytestapp-downloads-storage-claim
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+parameters:
+  - description: The OpenShift Namespace where the generated agent image resides (usually the current project). 
+    displayName: Namespace
+    name: NAMESPACE
+    required: true
+  - description: IP Address of the embedded Docker registry           
+    displayName: Registry IP
+    name: REGISTRY_IP
+    required: true
+    value: 172.30.1.1
+  - description: MMS Group Id for the Group to add this server to.          
+    displayName: MMS Group Id
+    name: MMS_GROUPID
+    required: true
+  - description: MMS Api Key for the Ops Manager to connect to.
+    displayName: MMS Api Key
+    name: MMS_APIKEY
+    required: true
+  - description: Ops Manager URL.
+    displayName: Ops Manager URL
+    name: OPSMGR_URL
+    required: true
+    value: http://opsmgr.opsmgr:8080
+  - description: Git server URL for Automation Agent Dockerfile definition
+    displayName: Git URL 
+    name: GIT_URL
+    required: true
+    value: https://github.com/pkdone/k8s-cld-mgr.git 
+  - description: Git context for Automation Agent Dockerfile definition
+    displayName: Git Context
+    name: GIT_CONTEXT
+    required: true
+    value: automation-agent 
+  - description: Common service name for Mongo nodes 
+    displayName: Mongo Service name
+    name: SERVICE_NAME
+    required: true
+    value: mongo
+  - description: Common service name for Mongo nodes
+    displayName: Mongo Service name
+    name: MONGO_PREFIX
+    required: true
+    value: node
+
