@@ -62,7 +62,7 @@ objects:
       role: mongo
     name: ${MONGO_PREFIX}
   spec:
-    replicas: 3
+    replicas: ${REPLICAS}
     selector:
       matchLabels:
         appname: mytestapp
@@ -180,4 +180,8 @@ parameters:
     name: MONGO_PREFIX
     required: true
     value: node
-
+  - description: Number of nodes/replicas to spin
+    displayName: Number of nodes
+    name: REPLICAS 
+    required: true
+    value: 3
