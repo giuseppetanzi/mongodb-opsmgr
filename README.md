@@ -39,6 +39,11 @@ oc new-project servers
 oc adm policy add-scc-to-user anyuid system:serviceaccount:servers:default
 oc process -f mongo-nodes.yaml NAMESPACE=servers MMS_GROUPID=<MMS_GROUPID> MMS_APIKEY=<MMS_APIKEY> OPSMGR_URL=<OPSMGR_URL> | oc create -f -
 ```
+To customize the number of replicas to be started, an additional parameter can be passed to the template, as follows:
+
+```
+... REPLICAS=<number of replicas>
+```
 
 Again, the first build will take longer, afterwards the nodes will be deployed.
 
