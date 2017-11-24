@@ -20,7 +20,11 @@ Now instantiate the template within the project
 oc process -f opsmgr.yaml | oc create -f -
 ```
 
-A build will automatically start taking some minutes, finally the Ops Manager will be up and running, using a second pod as its own Mongod database (single instance).
+A build will automatically start taking some minutes, finally the Ops Manager will be up and running, using a second pod as its own Mongod database (single instance). Build running csan be verified via:
+
+```
+oc get builds
+```
 
 To complete the next step, it's necessary to access the Ops Manager web interface via the automatically created Route for the Ops Manager. During the initial Ops Manager configuration the server URL to be used is in the form http://<service_name>.<namespace>:8080. 
     
