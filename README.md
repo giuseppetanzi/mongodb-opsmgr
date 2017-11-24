@@ -1,4 +1,4 @@
-# mongodb-opsmgr
+# MongoDB Ops Manager on Openshift
 
 Quick instructions on how to use this demo.
 
