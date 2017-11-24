@@ -9,9 +9,8 @@ LOGFILE="/opt/mongodb/mms/logs/docker-started-mms.log"
 sigterm_handler() {
   echo "AGENT-WRAPPER: Stopping mms service"
   /opt/mongodb/mms/bin/mongodb-mms stop
-  killall -w -SIGTERM tail || true
   kill -KILL 1 || true
-  echo "AGENT-WRAPPER: Finished hanging up mongos/mongod/agent processes"
+  echo "AGENT-WRAPPER: Finished stopping mms processes"
   exit 143
 }
 
