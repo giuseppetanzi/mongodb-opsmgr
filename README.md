@@ -28,7 +28,7 @@ Take note of mmsGroupID and mmsApiKey, that will be used in the Mongo nodes' con
 
 As next step, we'll create a set of 3 nodes with Automation Agent preinstalled, to be able to test monitoring and management features within an OpenShift deployment environment.
 
-Finally, proceed with creation of Mongo nodes
+Finally, proceed with creation of Mongo nodes, on a different project/namespace:
 
 ```
 oc new-project servers
