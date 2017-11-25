@@ -1,16 +1,20 @@
 # MongoDB Ops Manager on Openshift
 
-Quick instructions on how to use this demo.
+Quick instructions on how to use this demo on an OpenShift/Minishift installation.
 
-After starting up OpenShift/Minishift, create a project for hosting the OpsManager.
+In case of Minishift, make sure to create a custom profile and allocate a reasonable set of resources:
+
+```
+minishift profile set mongo
+minishift config set memory 8096
+minishift config set disk-size 30g
+minishift start
+```
+
+Next, create a project for hosting the OpsManager and give the default service account for that project permission to start the pod with anyuid SCC.
 
 ```
 oc new-project opsmgr
-```
-
-Give the default service account for that project permission to start the pod with anyuid SCC
-
-```
 oc adm policy add-scc-to-user anyuid system:serviceaccount:opsmgr:default
 ```
     
