@@ -11,7 +11,7 @@ minishift config set disk-size 30g
 minishift start
 ```
 
-Next, create a project for hosting the OpsManager and give the default service account for that project permission to start the pod with anyuid SCC.
+Next, create a project for hosting the OpsManager and give the default service account permission to start the pod with anyuid SCC.
 
 ```
 oc new-project opsmgr
