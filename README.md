@@ -38,11 +38,11 @@ Finally, proceed with creation of Mongo nodes, on a different project/namespace.
 oc describe service docker-registry -n default | grep IP:
 ```
 
-This address will then be passed as parameter when instantiating the node template:
+This address will then be passed as parameter when instantiating the node template (make sure to pass the project name as a parameter as well, in this case ```servers```):
 ```
 oc new-project servers
 oc adm policy add-scc-to-user anyuid system:serviceaccount:servers:default
-oc process -f mongo-nodes.yaml NAMESPACE=servers MMS_GROUPID=<MMS_GROUPID> MMS_APIKEY=<MMS_APIKEY> OPSMGR_URL=<OPSMGR_URL> | oc create -f -
+oc process -f mongo-nodes.yaml NAMESPACE=servers REGISTRY_IP:<embeddedRegistryIP> MMS_GROUPID=<MMS_GROUPID> MMS_APIKEY=<MMS_APIKEY> OPSMGR_URL=<OPSMGR_URL> | oc create -f -
 ```
 To customize the number of replicas to be started, an additional parameter can be passed to the template, as follows:
 
