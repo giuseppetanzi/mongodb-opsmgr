@@ -32,8 +32,13 @@ Take note of mmsGroupID and mmsApiKey, that will be used in the Mongo nodes' con
 
 As next step, we'll create a set of 3 nodes with Automation Agent preinstalled, to be able to test monitoring and management features within an OpenShift deployment environment.
 
-Finally, proceed with creation of Mongo nodes, on a different project/namespace:
+Finally, proceed with creation of Mongo nodes, on a different project/namespace. To complete this step, it's necessary to retrieve the internal IP address of the embedded OpenShift registry:
 
+```
+oc describe service docker-registry -n default | grep IP:
+```
+
+This address will then be passed as parameter when instantiating the node template:
 ```
 oc new-project servers
 oc adm policy add-scc-to-user anyuid system:serviceaccount:servers:default
