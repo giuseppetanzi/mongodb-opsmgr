@@ -276,7 +276,7 @@ parameters:
     required: true
     value: https://github.com/giuseppetanzi/mongodb-opsmgr.git 
   - description: Git server URL for Ops Manager Dockerfile definition
-    displayName: Git URL
+    displayName: Git Context
     name: GIT_CONTEXT
     required: true
     value: opsmgr
