@@ -49,7 +49,7 @@ objects:
     tags:
     - from:
         kind: DockerImage
-        name: docker.io/mongo:latest
+        name: docker.io/mongo:3.4
       importPolicy: {}
       name: latest
       referencePolicy:
