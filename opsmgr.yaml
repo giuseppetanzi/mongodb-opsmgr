@@ -61,7 +61,6 @@ objects:
       name: mongo
     name: mongod
   spec:
-    clusterIP: None
     ports:
     - port: 27017
       protocol: TCP
