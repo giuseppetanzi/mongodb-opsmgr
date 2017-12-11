@@ -125,6 +125,8 @@ objects:
       spec:
         containers:
         - image: '' 
+          ports:
+          - containerPort: 27017
           command:
           - mongod
           - --wiredTigerCacheSizeGB
